@@ -4,43 +4,38 @@
   vars:
     JAVA_HOME: "/usr/lib/jvm/jre-1.8.0-openjdk.x86_64"
     app_name: simple-webapp.war
+    # tomcat installation settings
+    tomcat_setup: true
+    tomcat_install_method: local_zipfiles
+    workdir: /opt
+    tomcat_zipfile: "{{ workdir }}/jws-5.4.zip"
+    tomcat_home: "{{ workdir }}/jws-5.4/tomcat"
+    tomcat_service_name: tomcat
+    tomcat_rhn_download_url: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=90341
+    # install Java using RPM
+    tomcat_java_version: 1.8.0
+    # enable tomcat as service (systemd integration)
+    tomcat_systemd_enabled: True
+  collections:
+    - middleware_automation.redhat_csp_download
+    - middleware_automation.jws
   roles:
+    - redhat_csp_download
     - jws
-    - sabre1041.redhat-csp-download
-  tasks:
-
-    - name: "Check that required parameters are provided"
-      ansible.builtin.assert:
+  pre_tasks:
+    - assert:
         that:
-          - app_url is defined
-          - app_url != ""
+          - rhn_username is defined
+          - rhn_password is defined
+          - tomcat_zipfile is defined
         quiet: true
 
-    - name: Check is port 8080 is open
-      ansible.builtin.wait_for:
-        host: localhost
-        port: 8080
-        state: started
-        delay: 0
-        timeout: 3
+    - name: "Install JWS with zipfile from RHN"
+      redhat_csp_download:
+        url: "{{ tomcat_rhn_download_url }}"
+        dest: "{{ tomcat_zipfile }}"
+        username: "{{ rhn_username }}"
+        password: "{{ rhn_password }}"
 
-    - name: Deploy the demo app
-      ansible.builtin.get_url:
-        url: "{{ app_url }}"
-        dest: "{{ jws.catalina.home }}/{{ app_name }}"
-        force: yes
-      notify: restart tomcat service
-
-    - name: Check is port 8080 is open after restart
-      ansible.builtin.wait_for:
-        host: localhost
-        port: 8080
-        state: started
-        delay: 0
-        timeout: 3
-
-  handlers:
-    - name: restart tomcat service
-      ansible.builtin.service:
-        name: jws5-tomcat.service
-        state: restarted
+  tasks:
+    - include_tasks: tasks/deploy_app.yml
