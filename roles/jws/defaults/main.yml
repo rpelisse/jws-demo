@@ -1,7 +1,0 @@
----
-jws:
-#  package: jws5
-  rhn_url: 'https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=90361'
-  catalina:
-    home: /var/opt/rh/scls/jws5
-
