@@ -1,2 +1,1 @@
 app_url: https://people.redhat.com/~rpelisse/simple-webapp-1.0.war
-app: /var/opt/rh/scls/jws5/lib/tomcat/webapps/simple-webapp.war

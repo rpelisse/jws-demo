@@ -1,6 +1,0 @@
----
-jws:
-  katello:
-    rpm:
-      url: https://jboss-topic.usersys.redhat.com/pub/katello-ca-consumer-jboss-topic.usersys.redhat.com-1.0-3.noarch.rpm
-      dest: /tmp/katello-ca-consumer-jboss-topic.rpm
