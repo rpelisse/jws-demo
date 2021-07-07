@@ -4,10 +4,29 @@
   vars:
     JAVA_HOME: "/usr/lib/jvm/jre-1.8.0-openjdk.x86_64"
     app_name: simple-webapp.war
+    # tomcat settings
+    tomcat_setup: true
+    tomcat_install_method: rhn_zipfiles
+    workdir: /opt
+    tomcat_zipfile: "{{ workdir }}/tomcat.zip"
+    tomcat_home: "{{ workdir }}/jws"
+    tomcat_service_name: tomcat
+    tomcat_java_version: 1.8.0
+  collections:
+    - middleware_automation.redhat_csp_download
+    - middleware_automation.jws
   roles:
+    - redhat_csp_download
     - jws
-    - sabre1041.redhat-csp-download
   tasks:
+
+    # The following task works, Ansible find the module, but run within the jws role later on, it will fails :(
+    - name: "Install JWS with zipfile from RHN"
+      redhat_csp_download:
+        url: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=90341
+        dest: /tmp/
+        username: "{{ rhn_username }}"
+        password: "{{ rhn_password }}"
 
     - name: "Check that required parameters are provided"
       ansible.builtin.assert:
@@ -30,6 +49,7 @@
         dest: "{{ jws.catalina.home }}/{{ app_name }}"
         force: yes
       notify: restart tomcat service
+      when: False
 
     - name: Check is port 8080 is open after restart
       ansible.builtin.wait_for:
@@ -44,3 +64,4 @@
       ansible.builtin.service:
         name: jws5-tomcat.service
         state: restarted
+      when: False
